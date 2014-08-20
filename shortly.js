@@ -2,6 +2,9 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session      = require('express-session');
+//var cookieParser = require('cookie-parser');
+
 
 
 var db = require('./app/config');
@@ -10,6 +13,13 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+
+//authentication libraries
+//
+////
+/////
+
+
 
 var app = express();
 
@@ -21,6 +31,9 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+
+//auth
+app.use(session());
 
 
 app.get('/', 
@@ -77,7 +90,24 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/login', function(req, res){
+  //render login page
+  res.render('login.ejs');
+});
 
+app.post('/signup', function(req, res){
+
+});
+
+app.get('/signup', function(req, res){
+  //render signup page
+  res.render('signup.ejs');
+});
+
+app.get('logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+})
 
 
 /************************************************************/
