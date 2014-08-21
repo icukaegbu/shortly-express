@@ -53,7 +53,7 @@ function(req, res) {
   });
 });
 
-app.post('/links', 
+app.post('/links', checkUser, loadUser,
 function(req, res) {
   var uri = req.body.url;
 
@@ -96,7 +96,19 @@ app.get('/login', function(req, res){
 });
 
 app.post('/signup', function(req, res){
+  var username = request.body.username;
+  var password = request.body.password;
 
+  //if( username)
+  User.authenticate(username, password).then(function(user){
+    //set the uid in session
+    req.session.uid = user.id;
+    res.redirect('/');
+  }, function(e){
+    req.session.uid = null;
+    res.statusCode = 404;
+    res.render('/signup', { error: e.message });
+  });
 });
 
 app.get('/signup', function(req, res){
@@ -107,7 +119,7 @@ app.get('/signup', function(req, res){
 app.get('logout', function(req, res){
   req.logout();
   res.redirect('/');
-})
+});
 
 
 /************************************************************/
@@ -137,6 +149,45 @@ app.get('/*', function(req, res) {
     }
   });
 });
+
+// function isLoggedIn(req, res, next){
+//   if(req.isAuthenticated()){
+//     return next();
+//   }
+
+//   res.redirect('/');
+// }
+
+function checkUser(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+}
+
+function loadUser(req, res, next){
+  // if (req.session.username ){
+  //   new User({username: req.session.username}).fetch()
+  //       .then(function(user){
+  //         req.user = user;
+  //         next();
+  //       });
+  // }
+  if ( req.session.uid ){
+    new User({ id: req.session.uid }).fetch()
+        .then(function(user){
+          req.user = user;
+          next();
+        });
+  } 
+  else {
+    return next();
+  }
+
+}
+
 
 console.log('Shortly is listening on 4568');
 app.listen(4568);
